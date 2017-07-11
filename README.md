@@ -4,7 +4,7 @@ A list of snippets and advice for removing SDK bits of code in our codebase, in 
 ## Replacing sdk/core/heritage ([bug 1368939](https://bugzil.la/1368939))
 
 * [SDK Heritage API reference](https://developer.mozilla.org/en-US/Add-ons/SDK/Low-Level_APIs/core_heritage)
-* See [How to deal with decorators](#how_to_deal_with_decorators) for edge cases.
+* See [How to deal with decorators](#how-to-deal-with-decorators) for edge cases.
 
 ### How to replace heritage’s `Class`
 
@@ -98,7 +98,7 @@ class Pet extends Dog {
 }
 ```
 
-It might be not possible everywhere, maybe because [Decorators](#how_to_deal_with_decorators), or because the refactoring of the code would be more complex because object composition. In such cases:
+It might be not possible everywhere, maybe because [Decorators](#how-to-deal-with-decorators), or because the refactoring of the code would be more complex because object composition. In such cases:
 
 #### Alternative way
 
