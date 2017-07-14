@@ -39,6 +39,9 @@ class Dog {
 
 ### How to replace the `Class`' extends
 
+> #### Important
+> Start the refactoring always from the superclasses. It means, in the example below, that `Dog` needs to be replaced with ES6 `class` before start to work on `Pet`. 
+
 Replace:
 ```js
 var Pet = Class({
