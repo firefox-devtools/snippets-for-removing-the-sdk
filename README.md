@@ -40,11 +40,11 @@ class Dog {
 ### How to replace the `Class`' extends
 
 > #### Important
-> Start the refactoring always from the superclasses. It means, in the example below, that `Dog` needs to be replaced with ES6 `class` before start to work on `Pet`. 
+> Start the refactoring always from the superclasses. It means, in the example below, that `Dog` needs to be replaced with ES6 `class` before start to work on `Puppy`. 
 
 Replace:
 ```js
-var Pet = Class({
+var Puppy = Class({
   extends: Dog,
   initialize: function initialize(breed, name) {
     Dog.prototype.initialize.call(this, name);
@@ -58,7 +58,7 @@ var Pet = Class({
 
 With:
 ```js
-class Pet extends Dog {
+class Puppy extends Dog {
   constructor(breed, name) {
     super(name);
     this.breed = breed;
@@ -77,11 +77,11 @@ Use ES6 classes when it's possible, that means also when `extend` is used.
 
 Replace:
 ```js
-function Pet(breed, name) {
+function Puppy(breed, name) {
   Dog.call(this, name);
   this.breed = breed;
 }
-Pet.prototype = extend(Dog.prototype, {
+Puppy.prototype = extend(Dog.prototype, {
   call: function call(name) {
     return this.name === name ? this.bark() : "";
   }  
@@ -90,7 +90,7 @@ Pet.prototype = extend(Dog.prototype, {
 
 With:
 ```js
-class Pet extends Dog {
+class Puppy extends Dog {
   constructor(breed, name) {
     super(name);
     this.breed = breed;
@@ -123,7 +123,7 @@ Decorators are easy to use in ES5 but they're not possible in ES6. There is a sp
 
 Replace:
 ```js
-var Pet = Class({
+var Puppy = Class({
   extends: Dog,
   initialize: function initialize(breed, name) {
     Dog.prototype.initialize.call(this, name);
@@ -139,11 +139,11 @@ var Pet = Class({
 
 With:
 ```js
-function Pet(breed, name) {
+function Puppy(breed, name) {
   Dog.call(this, name);
   this.breed = breed;
 }
-Pet.prototype = extend(Dog.prototype, {
+Puppy.prototype = extend(Dog.prototype, {
   call: chainable(function call(name) {
     return this.name === name ? this.bark() : "";
   })
