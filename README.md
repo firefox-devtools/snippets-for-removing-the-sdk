@@ -40,7 +40,7 @@ class Dog {
 ### How to replace the `Class`' extends
 
 > #### Important
-> Start the refactoring always from the superclasses. It means, in the example below, that `Dog` needs to be replaced with ES6 `class` before start to work on `Puppy`. 
+> Start the refactoring always from the superclasses. It means, in the example below, that `Dog` needs to be replaced with ES6 `class` before start to work on `Puppy`.
 
 Replace:
 ```js
@@ -84,7 +84,7 @@ function Puppy(breed, name) {
 Puppy.prototype = extend(Dog.prototype, {
   call: function call(name) {
     return this.name === name ? this.bark() : "";
-  }  
+  }
 });
 ```
 
@@ -112,7 +112,7 @@ const { extend } = require("sdk/core/heritage");
 
 With:
 ```js
-const { extend } = require("devtools/shared/DevToolsUtils");
+const { extend } = require("devtools/shared/extend");
 ```
 
 ### How to deal with decorators
