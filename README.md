@@ -159,7 +159,34 @@ In [bug 1381542](https://bugzil.la/1381542) we're unifying the DevTools `EventEm
 
 ### Differences with the old `EventEmitter`
 
-1. It has `on`, `off`, `emit` and `once` as static method too:
+#### Major differences
+
+1. `emit` doesn't pass the event type anymore
+    ```js
+    const EventEmitter = require("devtools/shared/event-emitter");
+    const eventBus = new EventEmitter();
+    
+    eventBus.on("data", console.log);
+    // logs "a", "b", "c"
+    eventBus.emit("data", "a", "b", "c");
+    ```
+2.  Now an exception is raised if a bad listener (not a function) is passed to `on` and `once`.
+
+3.  `this` in listeners points to the `EventEmitter` instance (no need to `bind` anymore):
+    ```js
+    const EventEmitter = require("devtools/shared/event-emitter");
+    const { emit } = EventEmitter;
+
+    const eventBus = new EventEmitter();
+
+    eventBus.on("data-received", function onDataReceived() {
+      console.log(this === eventBus); // true
+    });
+    ```
+
+#### Additional features
+
+1. It has `on`, `off`, `emit` and `once` as static methods too:
     ```js
     const EventEmitter = require("devtools/shared/event-emitter");
     const { emit } = EventEmitter;
@@ -171,6 +198,7 @@ In [bug 1381542](https://bugzil.la/1381542) we're unifying the DevTools `EventEm
     // This is equivalent to `eventBus.on`
     emit(eventBus, "data-received");
     ```
+
 2. It has `count` static method
    ```js
     const EventEmitter = require("devtools/shared/event-emitter");
@@ -181,6 +209,7 @@ In [bug 1381542](https://bugzil.la/1381542) we're unifying the DevTools `EventEm
     console.log(count(eventBus, "data-received")); // 1
     console.log(count(eventBus, "foo")); // 0
     ```
+
 3. `off` method can remove all listeners at once
    ```js
     const EventEmitter = require("devtools/shared/event-emitter");
@@ -200,16 +229,6 @@ In [bug 1381542](https://bugzil.la/1381542) we're unifying the DevTools `EventEm
     // removes all the listeners
     eventBus.off();
     ```
-4. `emit` doesn't pass the event type anymore
-    ```js
-    const EventEmitter = require("devtools/shared/event-emitter");
-    const eventBus = new EventEmitter();
-    
-    eventBus.on("data", console.log);
-    // logs "a", "b", "c"
-    eventBus.emit("data", "a", "b", "c");
-    ```
-5.  Now an exception is raised if a bad listener (not a function) is passed to `on` and `once`.
    
 ### Replacing sdk/event/core
 
