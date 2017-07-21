@@ -209,7 +209,8 @@ In [bug 1381542](https://bugzil.la/1381542) we're unifying the DevTools `EventEm
     // logs "a", "b", "c"
     eventBus.emit("data", "a", "b", "c");
     ```
-    
+5.  Now an exception is raised if a bad listener (not a function) is passed to `on` and `once`.
+   
 ### Replacing sdk/event/core
 
 Everything should works just replacing the module's path:
