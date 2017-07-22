@@ -172,7 +172,7 @@ In [bug 1381542](https://bugzil.la/1381542) we're unifying the DevTools `EventEm
     ```
 2.  Now an exception is raised if a bad listener (not a function) is passed to `on` and `once`.
 
-3.  `this` in listeners points to the `EventEmitter` instance (no need to `bind` anymore):
+3.  `this` in listeners points to the `EventEmitter` instance (no need to `bind` anymore on simple cases):
     ```js
     const EventEmitter = require("devtools/shared/event-emitter");
     const { emit } = EventEmitter;
@@ -229,7 +229,91 @@ In [bug 1381542](https://bugzil.la/1381542) we're unifying the DevTools `EventEm
     // removes all the listeners
     eventBus.off();
     ```
-   
+
+#### Experimental features
+> **Note** those are features that are currently in the [EventEmitter repo](https://github.com/zer0/gecko/tree/event-emitter-1381542), they can be used, but I'd like to see how much sense they have once we fixed the tests.
+
+1. `once` can now have a _predicate_ function as argument.
+This was done since I found this pattern often in some tests (actual code below):
+```js
+function waitForUpdate(inspector, waitForSelectionUpdate) {
+  return new Promise(resolve => {
+    inspector.on("boxmodel-view-updated", function onUpdate(reasons) {
+      // Wait for another update event if we are waiting for a selection related event.
+      if (waitForSelectionUpdate && !reasons.includes("new-selection")) {
+        return;
+      }
+
+      inspector.off("boxmodel-view-updated", onUpdate);
+      resolve();
+    });
+  });
+}
+```
+We want to listen only "once" to an event, returning a `promise`.
+It seems a job for `once` method; it does exactly that.
+Unfortunately, we want to do so only *if* certain conditions are met.
+
+Now, the same code can be written has:
+```js
+function waitForUpdate(inspector, waitForSelectionUpdate) {
+  return inspector.once("boxmodel-view-update", {
+    when: reasons => !waitForSelectionUpdate || reasons.includes("new-selection")
+  });
+}
+```
+
+2. `on` and `once` can now accept an object as listener à la [DOM EventListener](https://developer.mozilla.org/en-US/docs/Web/API/EventListener)
+
+This was done to avoid to `bind` functions when we're dealing with multiple objects / emitter (kind of actual code):
+
+```js
+const EventEmitter = require("devtools/shared/event-emitter");
+
+function Inspector(toolbox) {
+  EventEmitter.decorate(this);
+
+  this.onSidebarShown = this.onSidebarShown.bind(this);
+  this.onSidebarHidden = this.onSidebarHidden.bind(this);
+  this.onSidebarSelect = this.onSidebarSelect.bind(this);
+
+  // Without the `bind`, the contextual object will be `sidebar`
+  this.sidebar.on("show", this.onSidebarShown);
+  this.sidebar.on("hide", this.onSidebarHidden);
+  this.sidebar.on("destroy", this.onSidebarHidden);
+ }
+```
+
+In regular Web Development it's possible avoid that passing an object, instead of a function, with an [handlerEvent](https://developer.mozilla.org/en-US/docs/Web/API/EventListener) method. I applied the same logic here:
+
+```js
+const EventEmitter = require("devtools/shared/event-emitter");
+
+class Inspector extends EventEmitter {
+  constructor(toolbox) {
+    super();
+
+    this.sidebar.on("show", this);
+    this.sidebar.on("hide", this);
+    this.sidebar.on("destroy", this);
+  }
+  
+  [EventEmitter.handler](type) {
+    switch (type) {
+      case "show":
+        this.onSidebarShown();
+        break;
+      case "hide":
+      case "destroy":
+        this.onSidebarHidden();
+        break;
+    }
+  }
+}
+```
+
+That avoid to create new functions and rewrite the instance's method all the time, plus it give to us the "master switch" capability if needed.
+
 ### Replacing sdk/event/core
 
 Everything should works just replacing the module's path:
@@ -334,11 +418,11 @@ eventBus.once("one-time-only", doSomethingElse);
 That's because internally a [Symbol](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol) for the listener is attached to the object, changing its internal Shape; where, instead, the `EventEmitter` object already has it from the start.
 That also means, all the `EventEmitter`'s static methods that consumes the listeners instead of adding them, are safe to use (`off`, `emit`, `count`)
 
+### Prefer explicit listeners to a "master switch"
+
+With the experimental functionality that provides a `EventEmitter.handler`, it's possible use a "master switch" as in the example. However, that should be done **only** if we're working with multiple objects, and we need a different contextual object in our listeners. In all the other cases, it's preferable assign any single listener to a specific event type.
+
 ### Functionalities not supported
-
-#### Master Switch
-
-The old `EventEmitter`'s emit passes the event type as first argument, and the SDK's `emit` had a special event type for that (`"*"`). During the refactor of the API was decided to do not support this functionality in order to keep everything simpler and explicit. Any code that uses a listener as "master switch" can be easily ported.
 
 #### sdk/event/utils
 
