@@ -195,7 +195,7 @@ In [bug 1381542](https://bugzil.la/1381542) we're unifying the DevTools `EventEm
 
     eventBus.on("data-received", onDataReceived);
 
-    // This is equivalent to `eventBus.on`
+    // This is equivalent to `eventBus.emit`
     emit(eventBus, "data-received");
     ```
 
