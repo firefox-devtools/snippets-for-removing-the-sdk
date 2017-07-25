@@ -201,7 +201,7 @@ In [bug 1381542](https://bugzil.la/1381542) we're unifying the DevTools `EventEm
 
 2. It has `count` static method
    ```js
-    const EventEmitter = require("devtools/shared/event-emitter");
+    const { count } = require("devtools/shared/event-emitter");
     const eventBus = new EventEmitter();
 
     eventBus.on("data-received", onDataReceived);
